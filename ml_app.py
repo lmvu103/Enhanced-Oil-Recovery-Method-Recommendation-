@@ -13,9 +13,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 #Importing the Keras library and packages
-import keras
-from keras.models import Sequential
-from keras.layers import Dense
+import tensorflow.keras.backend as K
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 from keras.layers import Dropout
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -62,42 +63,6 @@ st.title("EOR METHODS SCREENING BY MACHINE LEARNING")
 
 st.write("---")
 
-st.markdown(
-    """
-This App consists of implementing an **EOR Screening** for any well by using Machine 
-Learning algorithms. """
-)
-
-# Fill in information about the project implemented in this app
-expander_bar = st.expander("About")
-expander_bar.markdown(
-    "This project consists of implementing an EOR Screening by using "
-    "Machine Learning algorithms. It must be mentioned that the "
-    "dataset used for training and evaluating these algorithms have a"
-    "size of roughly 200 successful EOR Projects (Rows or "
-    "observations) from some countries, as well as 7 reservoir "
-    "parameters, which are the feature or dependent variables. "
-    "Furthermore, the target variable of this model is a categorical "
-    "variable, which contains 5 EOR Methods (classes) such as the "
-    "steam injection method, CO2 injection method, HC injection "
-    "method, polymer injection method, and combustion in situ "
-    "method."
-)
-
-# Adding of a mp4 video
-st.markdown(
-    """
-**The Phases of Oil Recovery**
-"""
-)
-video = open("Oil Phases Recovery.mp4", "rb")
-st.video(video)
-st.markdown("<span style=“background-color:#121922”>", unsafe_allow_html=True)
-st.markdown(
-    "Energy & Environmental Research Center. (2014, April). The Phases of Oil Recovery"
-)
-
-
 # Insert image into left side section
 img = Image.open("icon.png")
 st.sidebar.image(img)
@@ -106,7 +71,7 @@ with st.sidebar.header(":file_folder: 1. Upload the csv data"):
     upload_file = st.sidebar.file_uploader("Upload your csv file", type=["csv"])
     st.sidebar.markdown(
         """
-    [Download csv file](https://raw.githubusercontent.com/FreddyEcu-Ch/Machine-Learning/main/DATA%20WORLWIDE%20EOR%20PROJECTSP.csv)
+    [Download csv file](https://github.com/lmvu103/Enhanced-Oil-Recovery-Method-Recommendation-/blob/main/DATA%20WORLWIDE%20EOR%20PROJECTSP.csv)
     """
     )
 
@@ -143,53 +108,13 @@ with st.sidebar.subheader("3.3 Reservoir Parameters"):
     Temperature = st.sidebar.slider("Reservoir Temperature (F)", 50, 300)
     Oil_saturation = st.sidebar.slider("Oil Saturation (%)", 10, 80, 35)
 
-# Exploratory Data Analysis (EDA)
-if st.button("Press to See the Exploratory Data Analysis (EDA)"):
-    st.header("**Exploratory Data Analysis (EDA)**")
-    st.write("---")
-    if upload_file is not None:
-        @st.cache
-        def load_csv():
-            data = pd.read_csv(upload_file)
-            return data
-
-        df = load_csv()
-        # pr = ProfileReport(df)
-        st.markdown("**Input Dataframe**")
-        st.write(df)
-        st.write("---")
-        # st.markdown("**EDA Report**")
-        # st_profile_report(pr)
-
-    st.write("---")
-    st.header("**Geospatial Data**")
-
-    # Load the coordinates of the countries where the EOR projects of this dataset are
-    coordinates = {
-        "Norway": ([64.5783, 17.8882], 5),
-        "Canada": ([56.130366, -106.346771], 38),
-        "Usa": ([37.09024, -95.712891], 140),
-        "Brazil": ([-23.533773, -46.625290], 8),
-        "Egypt": ([26.820553, 30.802498], 1),
-        "Germany": ([51.5167, 9.9167], 10),
-    }
-    # Load the world map
-    m = folium.Map(zoom_start=14)
-    # Load the markers and popups
-    for country, point in coordinates.items():
-        folium.Marker(
-            point[0], popup="<b>{}: </b> {} EOR Projects".format(country, point[1])
-        ).add_to(m)
-    folium_static(m)
-
 # Calling data processing modules
 sc = MinMaxScaler()
 le = LabelEncoder()
 ohe = OneHotEncoder()
 
+
 # Model Building
-
-
 def model(dataframe):
     # Calling the independent and dependent variables
     x = dataframe.iloc[:, 2:9]
@@ -213,12 +138,8 @@ def model(dataframe):
     dfle = dataframe
     dfle.EOR_Method = le.fit_transform(dfle.EOR_Method)
     y = ohe.fit_transform(y).toarray()
-
     # Data splitting
-    x_train, x_test, y_train, y_test = train_test_split(
-        x, y, train_size=split_size, random_state=0
-    )
-
+    x_train, x_test, y_train, y_test = train_test_split( x, y, train_size=split_size, random_state=0)
     # Calling the information that will be used for model prediction
     cnames = [
         "Porosity",
@@ -297,26 +218,21 @@ def model(dataframe):
         prediction = tree.predict(my_x)
     else:
         # Initializing the ANN
-        classifier = Sequential()
+        model = Sequential()
 
-        # Adding the input layer and the first hidden layer
-        classifier.add(Dense(output_dim=8, init='uniform', activation='relu',
-                             input_dim=6))  # 6-nodes in the hidden layer, (average of input and output nodes, uniform intializes weights very close to 0). Activation function is  rectifier. Input dim tells there are 11 input nodes or independent variables.
-        # classifier.add(Dropout(p = 0.2))
-        # Adding the second hidden layer
-        classifier.add(Dense(output_dim=8, init='uniform', activation='relu'))
-        # classifier.add(Dropout(p = 0.2))
-        # Adding the output  layer
-        classifier.add(Dense(output_dim=6, init='uniform', activation='softmax'))
-        # classifier.add(Dropout(p = 0.2))
+        model.add(Dense(8, activation='relu'))  ## Rectified Linear Unit(RELU) chosen as activation function
+        model.add(Dense(8, activation='relu'))
+        model.add(Dense(5, activation='relu'))
+        #model.add(Dense(1))
         # Compiling the ANN
-        classifier.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=[
+
+        model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=[
             'accuracy'])  # Optimizer is stochastic gradient descent (Adam model). Loss is the Logarithmix loss function in this case (It could be the Ordinary Least squares function)
 
         # Fitting the ANN to the training set
-        history = classifier.fit(x_train, y_train, batch_size=2, epochs=1000)
+        history = model.fit(x_train, y_train, batch_size=1, epochs=100)
 
-        # Plotting the accuraccy and loss
+        # Plotting the accuracy and loss
         print(history.history.keys())
         Max_accuracy = np.max(history.history['acc'])
         Min_loss = np.min(history.history['loss'])
@@ -338,10 +254,8 @@ def model(dataframe):
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
-
         # Predicting the Test set results
-        y_pred = classifier.predict(x_test)
-
+        y_test = model.predict(x_test)
 
     # Model performance information
     st.subheader("2. Model Performance")
@@ -371,15 +285,91 @@ def model(dataframe):
         st.info("Steam Injection")
 
 
-# Model Deployment
-
-
-if st.button("Model Deployment"):
-    if upload_file is not None:
+tab1, tab2, tab3 = st.tabs(["***Exploratory Data Analysis***", "***Machine Learning***", "***About***"])
+with tab1:
+    # Exploratory Data Analysis (EDA)
+    if st.button("Press to See the Exploratory Data Analysis (EDA)"):
+        st.header("**Exploratory Data Analysis (EDA)**")
         st.write("---")
-        st.subheader("1. Dataset")
-        df = pd.read_csv(upload_file)
-        df.rename(columns={"Viscocity": "Viscosity"}, inplace=True)
-        st.markdown("**1.1 Showing dataset**")
+        if upload_file is not None:
+            @st.cache_data
+            def load_csv():
+                data = pd.read_csv(upload_file)
+                return data
+
+        df = load_csv()
+        # pr = ProfileReport(df)
+        st.markdown("**Input Dataframe**")
         st.write(df)
-        model(df)
+        st.write("---")
+        # st.markdown("**EDA Report**")
+        # st_profile_report(pr)
+
+    st.write("---")
+    st.header("**Geospatial Data**")
+
+    # Load the coordinates of the countries where the EOR projects of this dataset are
+    coordinates = {
+        "Norway": ([64.5783, 17.8882], 5),
+        "Canada": ([56.130366, -106.346771], 38),
+        "Usa": ([37.09024, -95.712891], 140),
+        "Brazil": ([-23.533773, -46.625290], 8),
+        "Egypt": ([26.820553, 30.802498], 1),
+        "Germany": ([51.5167, 9.9167], 10),
+    }
+    # Load the world map
+    m = folium.Map(zoom_start=14)
+    # Load the markers and popups
+    for country, point in coordinates.items():
+        folium.Marker(
+            point[0], popup="<b>{}: </b> {} EOR Projects".format(country, point[1])
+        ).add_to(m)
+    folium_static(m)
+
+with tab2:
+    # Model Deployment
+    if st.button("Model Deployment"):
+        if upload_file is not None:
+            st.write("---")
+            st.subheader("1. Dataset")
+            df = pd.read_csv(upload_file)
+            df.rename(columns={"Viscocity": "Viscosity"}, inplace=True)
+            st.markdown("**1.1 Showing dataset**")
+            st.write(df)
+            model(df)
+        else:
+            st.write("Please upload Dataset or Download from the link!")
+
+with tab3:
+    st.write("This app is built by vulm. Feel free to contact me via email: lmvu103@gmail.com")
+
+    st.markdown(
+        """
+    This App consists of implementing an **EOR Screening** for any well by using Machine 
+    Learning algorithms.
+    This project consists of implementing an EOR Screening by using 
+        Machine Learning algorithms. It must be mentioned that the 
+        dataset used for training and evaluating these algorithms have a
+        size of roughly 200 successful EOR Projects (Rows or 
+        observations) from some countries, as well as 7 reservoir 
+        parameters, which are the feature or dependent variables. 
+        Furthermore, the target variable of this model is a categorical 
+        variable, which contains 5 EOR Methods (classes) such as the 
+        steam injection method, CO2 injection method, HC injection 
+        method, polymer injection method, and combustion in situ 
+        method."""
+    )
+
+
+    # Adding of a mp4 video
+    st.markdown(
+        """
+        **The Phases of Oil Recovery**
+        """
+    )
+    video = open("Oil Phases Recovery.mp4", "rb")
+    st.video(video)
+    st.markdown("<span style=“background-color:#121922”>", unsafe_allow_html=True)
+    st.markdown(
+        "Energy & Environmental Research Center. (2014, April). The Phases of Oil Recovery"
+    )
