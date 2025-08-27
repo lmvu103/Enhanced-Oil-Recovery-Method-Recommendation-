@@ -1,12 +1,12 @@
 ﻿pandas
-#pandas-profiling==3.2.0
+keras
 scikit-learn
 streamlit
-#streamlit-pandas-profiling==0.1.2
 folium
 matplotlib
 numpy
 streamlit-folium
 pillow
+
 
 
