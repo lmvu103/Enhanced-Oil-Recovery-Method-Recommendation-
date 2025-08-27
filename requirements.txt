@@ -1,4 +1,5 @@
 ﻿pandas
+tensorflow
 keras
 scikit-learn
 streamlit
@@ -7,6 +8,7 @@ matplotlib
 numpy
 streamlit-folium
 pillow
+
 
 
 
