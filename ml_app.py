@@ -13,7 +13,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 #Importing the Keras library and packages
-import tensorflow.keras.backend as K
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -373,3 +372,4 @@ with tab3:
     st.markdown(
         "Energy & Environmental Research Center. (2014, April). The Phases of Oil Recovery"
     )
+
