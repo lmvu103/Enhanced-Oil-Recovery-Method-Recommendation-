@@ -70,7 +70,7 @@ with st.sidebar.header(":file_folder: 1. Upload the csv data"):
     upload_file = st.sidebar.file_uploader("Upload your csv file", type=["csv"])
     st.sidebar.markdown(
         """
-    [Download csv file](https://raw.githubusercontent.com/lmvu103/Enhanced-Oil-Recovery-Method-Recommendation-/refs/heads/main/DATA%20WORLWIDE%20EOR%20PROJECTSP.csv
+    [Download csv file](https://raw.githubusercontent.com/lmvu103/Enhanced-Oil-Recovery-Method-Recommendation-/main/DATA%20WORLWIDE%20EOR%20PROJECTSP.csv
 )
     """
     )
